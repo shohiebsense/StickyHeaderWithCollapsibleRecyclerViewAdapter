@@ -1,0 +1,2 @@
+# StickyHeaderWithCollapsibleRecyclerViewAdapter
+Without using CustomView. :>
