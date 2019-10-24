@@ -4,7 +4,6 @@ import android.graphics.Canvas
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.forEachIndexed
 import androidx.recyclerview.widget.RecyclerView
 
 class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
@@ -20,15 +19,25 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
         if (topChildPosition == RecyclerView.NO_POSITION) {
             return
         }
+
         var headerPosition = listener.getHeaderPositionForItem(topChildPosition)
         val currentHeader = getHeaderViewForItem(headerPosition, parent)
         fixLayoutSize(parent, currentHeader)
         var contactPoint = currentHeader.bottom
         var childInContact = gethildInContact(parent, contactPoint, headerPosition)
-        if(childInContact != null && listener.isHeader(parent.getChildAdapterPosition(childInContact))){
-            moveHeader(c, currentHeader, childInContact)
-            return
+
+
+
+        if (childInContact != null) {
+            var childAdapterPosition = parent.getChildAdapterPosition(childInContact)
+            if(childAdapterPosition > 0){
+                if (listener.isHeader(childAdapterPosition)) {
+                    moveHeader(c, currentHeader, childInContact)
+                    return
+                }
+            }
         }
+
         drawHeader(c, currentHeader)
     }
 
@@ -36,7 +45,7 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
     fun getHeaderViewForItem(headerPosition: Int, parent: RecyclerView): View {
         var layoutResId = listener.getHeaderLayout(headerPosition)
         var header = LayoutInflater.from(parent.context).inflate(layoutResId, parent, false)
-        listener.bindHeaderData(header, headerPosition)
+        listener.bindStickyHeader(header, headerPosition)
         return header
     }
 
@@ -72,7 +81,7 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
 
             if (currentHeaderPos != index) {
                 var position = parent.getChildAdapterPosition(child)
-                if(position > 0){
+                if (position > 0) {
                     var isChildHeader = listener.isHeader(position)
                     if (isChildHeader) {
                         heightTolerance = stickyHeaderHeight - child.height
@@ -80,8 +89,9 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
                 }
             }
 
-            if(child != null){
-                var childBottomPosition = if (child.top > 0) child.bottom + heightTolerance else child.bottom
+            if (child != null) {
+                var childBottomPosition =
+                    if (child.top > 0) child.bottom + heightTolerance else child.bottom
                 if (childBottomPosition > contactPoint) {
                     if (child.top <= contactPoint) {
                         childInContact = child
@@ -93,16 +103,16 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
         return childInContact
     }
 
-    fun moveHeader(c: Canvas, currentHeader : View, nextHeader : View){
+    fun moveHeader(c: Canvas, currentHeader: View, nextHeader: View) {
         c.save()
         c.translate(0F, (nextHeader.top - currentHeader.height).toFloat())
         currentHeader.draw(c)
         c.restore()
     }
 
-    fun drawHeader(c: Canvas, header: View){
+    fun drawHeader(c: Canvas, header: View) {
         c.save()
-        c.translate(0F,0F)
+        c.translate(0F, 0F)
         header.draw(c)
         c.restore()
     }
@@ -110,7 +120,7 @@ class StickyHeaderItemDecoration(val listener: StickyHeaderListener) :
     interface StickyHeaderListener {
         fun getHeaderPositionForItem(itemPosition: Int): Int
         fun getHeaderLayout(headerPosition: Int): Int
-        fun bindHeaderData(headerView: View, headerPosition: Int)
+        fun bindStickyHeader(headerView: View, headerPosition: Int)
         fun isHeader(itemPosition: Int): Boolean
     }
 }

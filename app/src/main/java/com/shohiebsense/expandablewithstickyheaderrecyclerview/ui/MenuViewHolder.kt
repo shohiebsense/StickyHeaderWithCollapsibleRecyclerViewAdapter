@@ -9,5 +9,8 @@ import com.shohiebsense.expandablewithstickyheaderrecyclerview.model.MenuHeader
 class MenuViewHolder(view : View) : ChildViewHolder<Menu>(view) {
 
 
+    fun bind(item : Menu){
+
+    }
 
 }

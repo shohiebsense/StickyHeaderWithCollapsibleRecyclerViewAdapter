@@ -10,13 +10,13 @@ open class ExpandableWrapper<PR : Parent<CH>, CH> {
         }
 
     var child: CH? = null
-    var isWrappedParent = true
+    var isWrappedParent = false
     var isExpanded: Boolean = false
 
     constructor(parent: PR) : super() {
         this.parent = parent
         isWrappedParent = true
-        isExpanded = false
+        isExpanded = parent.isExpandedFromTheStart()
         wrappedChildList = generateChildItemList(parent)
     }
 

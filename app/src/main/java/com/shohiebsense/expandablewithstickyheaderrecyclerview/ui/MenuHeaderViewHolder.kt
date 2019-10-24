@@ -2,6 +2,7 @@ package com.shohiebsense.expandablewithstickyheaderrecyclerview.ui
 
 import android.view.View
 import android.view.animation.RotateAnimation
+import com.shohiebsense.expandablewithstickyheaderrecyclerview.lib.ExpandableWrapper
 import com.shohiebsense.expandablewithstickyheaderrecyclerview.lib.viewholder.ParentViewHolder
 import com.shohiebsense.expandablewithstickyheaderrecyclerview.model.Menu
 import com.shohiebsense.expandablewithstickyheaderrecyclerview.model.MenuHeader
@@ -10,27 +11,23 @@ import kotlinx.android.synthetic.main.item_menu_header.view.*
 class MenuHeaderViewHolder(view : View) : ParentViewHolder<MenuHeader, Menu>(view) {
 
 
+
+
+
+    override fun bind(expandableWrapperParent: ExpandableWrapper<MenuHeader, Menu>) {
+        super.bind(expandableWrapperParent)
+        isExpanded = parentItem.isExpanded
+        itemView.text_name.text =parentItem.parent?.name
+        animateArrowExpandCollapse(itemView.image_arrow_down, !isExpanded)
+    }
+
+    override fun onClick(view: View?) {
+        super.onClick(view)
+        isExpanded = parentItem.isExpanded
+    }
+
     override fun onExpansionToggled() {
-        super.onExpansionToggled()
-        val rotateAnimation: RotateAnimation
-        if (isExpanded) { // rotate clockwise
-            rotateAnimation = RotateAnimation(
-                ROTATED_POSITION,
-                INITIAL_POSITION,
-                RotateAnimation.RELATIVE_TO_SELF, PIVOT_VALUE,
-                RotateAnimation.RELATIVE_TO_SELF, PIVOT_VALUE
-            )
-        } else { // rotate counterclockwise
-            rotateAnimation = RotateAnimation(
-                INITIAL_POSITION*-1,
-                ROTATED_POSITION,
-                RotateAnimation.RELATIVE_TO_SELF,  PIVOT_VALUE,
-                RotateAnimation.RELATIVE_TO_SELF,  PIVOT_VALUE
-            )
-        }
-        rotateAnimation.duration = 200
-        rotateAnimation.fillAfter = true
-        itemView.image_arrow_down.startAnimation(rotateAnimation)
+        animateArrowExpandCollapse(itemView.image_arrow_down, isExpanded)
     }
 
 }

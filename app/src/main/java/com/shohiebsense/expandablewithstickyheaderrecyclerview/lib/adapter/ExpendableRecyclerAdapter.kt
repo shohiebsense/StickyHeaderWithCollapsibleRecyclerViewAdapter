@@ -1,5 +1,6 @@
 package com.shohiebsense.expandablewithstickyheaderrecyclerview.lib.adapter
 
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
@@ -40,9 +41,6 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
 
     override fun getHeaderLayout(headerPosition: Int): Int {
         return R.layout.item_menu_header
-    }
-
-    override fun bindHeaderData(headerView: View, headerPosition: Int) {
     }
 
     override fun isHeader(itemPosition: Int): Boolean {
@@ -96,7 +94,7 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
             }
 
             parentHolder.isExpanded = item.isExpanded
-            parentHolder.parent = item.parent!!
+            parentHolder.parentItem = item
             onBindParentViewHolder(
                 parentHolder,
                 getNearestParentPosition(flatPosition),
@@ -206,8 +204,9 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
             return 0
         }
         var parentCount = -1
-        flatItemList.forEach {
-            if (it.isWrappedParent) {
+        for(i in 0 .. flatPosition){
+            var item = flatItemList[i]
+            if (item.isWrappedParent) {
                 parentCount++
             }
         }
@@ -216,9 +215,8 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
 
     fun getFlatParentPosition(parentPosition: Int): Int {
         var parentCount = 0
-        var listItemCount = flatItemList.size
 
-        for (i in 0..flatItemList.size) {
+        for (i in 0..flatItemList.lastIndex) {
             var it = flatItemList[i]
             if (it.isWrappedParent) {
                 parentCount++
@@ -230,6 +228,7 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
         }
         return INVALID_FLAT_POSITION
     }
+
 
     fun getChildPosition(flatPosition: Int): Int {
         if (flatPosition == 0)
@@ -246,6 +245,8 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
         }
         return childCount
     }
+
+
 
     override fun getItemViewType(position: Int): Int {
         var item = flatItemList[position]
@@ -302,18 +303,20 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
             return
         }
 
-        parentWrapper.isExpanded = true
-        expansionStateMap.put(parentWrapper.parent!!, true)
+        if(parentWrapper.parent == null) return
+
+        expansionStateMap[parentWrapper.parent!!] = true
 
         var wrappedChildList = parentWrapper.wrappedChildList
         if (wrappedChildList != null) {
             var childCount = wrappedChildList.lastIndex
-            for (i in 0..childCount) {
-                flatItemList.add(flatParentPosition + i + 1, wrappedChildList[i])
+            for (i in 0 .. childCount) {
+                flatItemList.add(flatParentPosition+i+1, wrappedChildList[i])
             }
-            notifyItemRangeInserted(flatParentPosition + 1, childCount)
+            notifyItemRangeInserted(flatParentPosition + 1, wrappedChildList.size)
         }
 
+        parentWrapper.isExpanded = true
         if (isTriggered) {
             //todo event. ...
         }
@@ -338,7 +341,6 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
         if (!parentWrapper.isExpanded) {
             return
         }
-        parentWrapper.isExpanded = false
         expansionStateMap[parentWrapper.parent!!] = false
         var wrappedCChildList = parentWrapper.wrappedChildList
 
@@ -353,6 +355,42 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
         if (isCollapseTriggered) {
             //event
         }
+        parentWrapper.isExpanded = false
+
+    }
+
+
+    fun onSaveInstanceState(savedInstanceState : Bundle){
+        savedInstanceState.putSerializable(EXPANDED_STATE_MAP, generateExpandedStateMap())
+    }
+
+    fun onRestoreInstanceState(savedInstanceState: Bundle?){
+        if(savedInstanceState == null || !savedInstanceState.containsKey(EXPANDED_STATE_MAP)){
+            return
+        }
+
+        var savedInstanceMap: HashMap<Int, Boolean>  = savedInstanceState.getSerializable(EXPANDED_STATE_MAP) as HashMap<Int, Boolean>
+
+        var itemList = arrayListOf<ExpandableWrapper<PR,CH>>()
+        for (i in 0 .. parentList.lastIndex) {
+            var parentWrapper = ExpandableWrapper(parentList[i])
+            itemList.add(parentWrapper)
+
+            if(savedInstanceMap.containsKey(i)){
+                var isExpanded = savedInstanceMap[i]
+                parentWrapper.isExpanded = isExpanded!!
+
+                if(isExpanded){
+                    var wrappedChildList = parentWrapper.wrappedChildList
+                    for(childItem in wrappedChildList!!){
+                        itemList.add(childItem)
+                    }
+                }
+            }
+        }
+
+        flatItemList = itemList
+        notifyDataSetChanged()
     }
 
 

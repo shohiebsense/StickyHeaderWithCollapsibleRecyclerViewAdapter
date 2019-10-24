@@ -11,7 +11,7 @@ open class ChildViewHolder<CH>(val view : View) : RecyclerView.ViewHolder(view) 
 
     fun getParentAdapterPosition() : Int {
         var flatPosition = adapterPosition
-        if(adapterPosition == null || flatPosition == RecyclerView.NO_POSITION){
+        if(flatPosition == RecyclerView.NO_POSITION){
             return RecyclerView.NO_POSITION
         }
         return expandableAdapter.getNearestParentPosition(flatPosition)
@@ -19,7 +19,7 @@ open class ChildViewHolder<CH>(val view : View) : RecyclerView.ViewHolder(view) 
 
     fun getChildAdapterPosition() : Int {
         var flatPosition = adapterPosition
-        if(expandableAdapter == null || flatPosition == RecyclerView.NO_POSITION){
+        if( flatPosition == RecyclerView.NO_POSITION){
             return RecyclerView.NO_POSITION
         }
         return expandableAdapter.getChildPosition(flatPosition)

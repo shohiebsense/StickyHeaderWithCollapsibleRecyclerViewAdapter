@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var adapter = MenuAdapter(MenuService.generate())
+        var adapter = MenuAdapter(recycler_sample, MenuService.generate())
         val stickHeaderDecoration = StickyHeaderItemDecoration(adapter)
         recycler_sample.adapter = adapter
         recycler_sample.addItemDecoration(stickHeaderDecoration)
