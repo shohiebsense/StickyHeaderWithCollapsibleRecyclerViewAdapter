@@ -177,7 +177,7 @@ abstract class ExpandableAdapter<PR : Parent<CH>, CH, PVH : ParentViewHolder<PR,
     fun generateExpandedStateMap(): HashMap<Int, Boolean> {
         var parentHashMap = hashMapOf<Int, Boolean>()
         var childCount = 0
-        for (i in 0..flatItemList.size) {
+        for (i in 0..flatItemList.lastIndex) {
             var it = flatItemList[i]
             if (it.isWrappedParent) {
                 parentHashMap.put(i - childCount, it.isExpanded)
